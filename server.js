@@ -20,8 +20,8 @@ app.use(cors(
 ));
 
 // // routes
-app.use("/", userRoutes);
-app.use("/auth", authRoutes);
+app.use("/api/", userRoutes);
+app.use("/api/auth", authRoutes);
 
 const port = process.env.PORT || 3001;
 app.listen(port, console.log(`Listening on port ${port}...`));
