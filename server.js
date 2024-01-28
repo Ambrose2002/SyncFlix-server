@@ -12,11 +12,11 @@ connection();
 // middlewares
 app.use(express.json());
 app.use(cors(
-    {
-        orogin: ["https://sync-flix-fd6d21fb8933.herokuapp.com/"],
-        methods: ["GET", "POST", "DELETE"],
-        credentials: true
-    }
+    // {
+    //     orogin: ["https://sync-flix-fd6d21fb8933.herokuapp.com/"],
+    //     methods: ["GET", "POST", "DELETE"],
+    //     credentials: true
+    // }
 ));
 
 // // routes
