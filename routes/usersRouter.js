@@ -84,7 +84,7 @@ router.get("/video/:videoId", function (req, res) {
 	}
 
 	// GridFS Collection
-	db.collection('fs.files').findOne({_id: videoIdObject}, (err, video) => {
+	db.collection('fs.files').findOne({ _id: videoIdObject }, (err, video) => {
 		if (!video) {
 			console.log("video not found")
 			res.status(404).send("No video uploaded!");
@@ -117,5 +117,22 @@ router.get("/video/:videoId", function (req, res) {
 	});
 	;
 });
+
+router.delete('/video/:videoId', authenticateToken,async (req, res) => {
+	const videoId = req.params.videoId;
+
+	const videoIdObject = new mongoose.Types.ObjectId(videoId);
+	const userId = req.userId;
+
+	const video = await User.findOne({ _id: userId, "videos.videoId": videoIdObject });
+	if (!video) return res.status(404).json({ message: 'Video not found' })
+
+	await User.updateOne({ _id: userId }, { $pull: { videos: { videoId: videoIdObject } } })
+
+	bucket.delete(videoIdObject, (err, result) => {
+		if (err) return res.status(500).send("error deletiing from bucket");
+		res.status(200).send({ message: "Video deleted" });
+	});
+})
 
 module.exports = router;
