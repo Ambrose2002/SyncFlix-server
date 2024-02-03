@@ -74,7 +74,7 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req, re
 
 
 router.get("/video/:videoId", function (req, res) {
-
+	
 	videoId = req.params.videoId;
 	const videoIdObject = new mongoose.Types.ObjectId(videoId);
 
