@@ -6,6 +6,24 @@ const connection = require("./db/conn");
 const userRoutes = require("./routes/usersRouter");
 const authRoutes = require("./routes/authRouter");
 
+const http = require('http');
+const server = http.createServer(app);
+const socketIO = require('socket.io');
+const io = socketIO(server);
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Handle video stream
+    socket.on('video_stream', (data) => {
+        io.emit('video_frame', data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
+});
+
 // database connection
 connection();
 
