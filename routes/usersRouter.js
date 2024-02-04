@@ -74,7 +74,7 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req, re
 
 
 router.get("/video/:videoId", function (req, res) {
-	
+	console.log("Playing")
 	videoId = req.params.videoId;
 	const videoIdObject = new mongoose.Types.ObjectId(videoId);
 
@@ -85,6 +85,10 @@ router.get("/video/:videoId", function (req, res) {
 
 	// GridFS Collection
 	db.collection('fs.files').findOne({ _id: videoIdObject }, (err, video) => {
+		if (err) {
+			console.log(err);
+			res.status(500).send(err)
+		}
 		if (!video) {
 			console.log("video not found")
 			res.status(404).send("No video uploaded!");
