@@ -12,11 +12,11 @@ connection();
 // middlewares
 app.use(express.json());
 app.use(cors(
-    // {
-    //     orogin: ["https://syncflix-front-6ee3d875f855.herokuapp.com/"],
-    //     methods: ["GET", "POST", "DELETE"],
-    //     credentials: true
-    // }
+    {
+        orogin: ["https://syncflix-front-6ee3d875f855.herokuapp.com/"],
+        methods: ["GET", "POST", "DELETE"],
+        credentials: true
+    }
 ));
 
 // // routes
