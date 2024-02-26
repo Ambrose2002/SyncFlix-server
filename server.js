@@ -6,21 +6,49 @@ const connection = require("./db/conn");
 const userRoutes = require("./routes/usersRouter");
 const authRoutes = require("./routes/authRouter");
 
-const http = require('http');
-const server = http.createServer(app);
-const socketIO = require('socket.io');
-const io = socketIO(server);
+const { createServer } = require("http");
+const httpServer = createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(httpServer, {
+    cors: {
+        origin: "http://localhost:3000"
+    }
+});
 
 io.on('connection', (socket) => {
     console.log('A user connected');
 
-    // Handle video stream
-    socket.on('video_stream', (data) => {
-        io.emit('video_frame', data);
+    socket.on('joinRoom', (room) => {
+        socket.join(room);
+        console.log(`User joined room ${room}`);
+    });
+
+    // Handle video control events within a room
+    socket.on('play', (room) => {
+        io.to(room).emit('play');
+        console.log("playing")
+    });
+
+    socket.on('pause', (room) => {
+        io.to(room).emit('pause');
+    });
+
+    socket.on('seek', (room, time) => {
+        io.to(room).emit('seek', time);
+        console.log("seeking")
+    });
+
+    socket.on('chatMessage', ({ room, message }) => {
+        console.log(message)
+        io.to(room).emit('chatMessage', {
+            user: "Ambrose", // For simplicity, using socket.id as the user identifier
+            message,
+        });
+        console.log("emmitted", message)
     });
 
     socket.on('disconnect', () => {
-        console.log('A user disconnected');
+        console.log('User disconnected');
     });
 });
 
@@ -42,4 +70,4 @@ app.use("/api/", userRoutes);
 app.use("/api/auth", authRoutes);
 
 const port = process.env.PORT || 3001;
-app.listen(port, console.log(`Listening on port ${port}...`));
+httpServer.listen(port, console.log(`Listening on port ${port}...`));

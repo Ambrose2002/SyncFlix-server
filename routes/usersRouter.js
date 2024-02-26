@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const { User, validate } = require("../models/usersModel");
+const { Room } = require("../models/roomsModel");
 const bcrypt = require("bcrypt");
 const multer = require('multer');
 const jwt = require("jsonwebtoken");
@@ -74,7 +75,6 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req, re
 
 
 router.get("/video/:videoId", function (req, res) {
-	console.log("Playing")
 	videoId = req.params.videoId;
 	const videoIdObject = new mongoose.Types.ObjectId(videoId);
 
@@ -122,7 +122,7 @@ router.get("/video/:videoId", function (req, res) {
 	;
 });
 
-router.delete('/video/:videoId', authenticateToken,async (req, res) => {
+router.delete('/video/:videoId', authenticateToken, async (req, res) => {
 	const videoId = req.params.videoId;
 
 	const videoIdObject = new mongoose.Types.ObjectId(videoId);
@@ -137,6 +137,26 @@ router.delete('/video/:videoId', authenticateToken,async (req, res) => {
 		if (err) return res.status(500).send("error deletiing from bucket");
 		res.status(200).send({ message: "Video deleted" });
 	});
+})
+
+router.post('/room/create', async (req, res) => {
+	const { videoId, userId, userName } = req.body;
+	console.log(req.body)
+	
+	const room = await new Room({videoId: videoId, users: [{userId: userId, userName: userName}]}).save();
+
+	res.status(201).send({roomId: room._id})
+})
+
+router.post('/room/join', async (req, res) => {
+	console.log("...joining")
+	const {roomId, userId, userName} = req.body;
+	console.log(req.body)
+
+	const room = await Room.updateOne({ _id: roomId }, { $push: { users: { userId: userId, userName: userName } } })
+	if (!room) return res.status(404).json({ message: 'Room not found' });
+	const updatedRoom = await Room.findOne({_id: roomId})
+	res.send(updatedRoom)
 })
 
 module.exports = router;
