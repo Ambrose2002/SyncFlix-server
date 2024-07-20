@@ -5,6 +5,7 @@ const cors = require("cors");
 const connection = require("./db/conn");
 const userRoutes = require("./routes/usersRouter");
 const authRoutes = require("./routes/authRouter");
+const mongoose = require("mongoose")
 
 const { createServer } = require("http");
 const httpServer = createServer(app);
@@ -15,10 +16,17 @@ const io = new Server(httpServer, {
     }
 });
 
+const { Room } = require('./models/roomsModel');
+
 io.on('connection', (socket) => {
 
-    socket.on('joinRoom', (room) => {
+    socket.on('joinRoom', async (room) => {
         socket.join(room);
+
+        const roomDoc = await Room.findOne({ _id: room });
+        if (roomDoc) {
+            socket.emit('syncTime', { currentTime: roomDoc.currentTime });
+        }
     });
 
     // Handle video control events within a room
@@ -32,6 +40,15 @@ io.on('connection', (socket) => {
 
     socket.on('seek', (room, time) => {
         io.to(room).emit('seek', time);
+    });
+
+    socket.on('updateTime', async ({ roomId, currentTime }) => {
+        // Update playback time in MongoDB
+        const room = await Room.updateOne({_id: roomId}, {$set: {currentTime: currentTime}})
+        if (!room) console.log("no room found")
+        
+        // Broadcast the updated time to all clients in the room
+        io.to(room).emit('syncTime', { currentTime });
     });
 
     socket.on('chatMessage', ({ roomId, message, userName }) => {
