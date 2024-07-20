@@ -16,17 +16,14 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
 
     socket.on('joinRoom', (room) => {
         socket.join(room);
-        console.log(`User joined room ${room}`);
     });
 
     // Handle video control events within a room
     socket.on('play', (room) => {
         io.to(room).emit('play');
-        console.log("playing")
     });
 
     socket.on('pause', (room) => {
@@ -35,20 +32,16 @@ io.on('connection', (socket) => {
 
     socket.on('seek', (room, time) => {
         io.to(room).emit('seek', time);
-        console.log("seeking")
     });
 
-    socket.on('chatMessage', ({ room, message }) => {
-        console.log(message)
-        io.to(room).emit('chatMessage', {
-            user: "Ambrose", // For simplicity, using socket.id as the user identifier
+    socket.on('chatMessage', ({ roomId, message, userName }) => {
+        io.to(roomId).emit('message', {
+            user: userName,
             message,
         });
-        console.log("emmitted", message)
     });
 
     socket.on('disconnect', () => {
-        console.log('User disconnected');
     });
 });
 
